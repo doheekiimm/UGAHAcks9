@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>universe</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        /* Add this CSS class to style the button */
+        .button {
+            background-color: transparent; /* Set the background color to transparent */
+            background-image: url('./image/universe.jpg'); /* Set the background image URL */
+            background-size: cover; /* Scale the background image to cover the button */
+            background-repeat: no-repeat; /* Prevent the background image from repeating */
+            background-position: center; /* Center the background image */
+            color: white;
+            width: 100%;
+            border: 1px solid black; /* Add a black border */
+            cursor: pointer;
+            text-align: left; /* Align text to the left */
+            padding-left: 20px; /* Add padding to the left to move the text */
+            outline: none;
+            font-size: 16px;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports":
+            {
+                "three":          "https://unpkg.com/three@0.157.0/build/three.module.js",
+                "three/addons/":  "https://unpkg.com/three@0.157.0/examples/jsm/",
+                "lil-gui":        "./jsm/lil-gui.esm.js"
+
+            }
+        }
+    </script>
+    <script type="x-shader/x-vertex" id="iridescent_vertexShader">
+
+        varying vec3 vNormal;
+
+        // The view direction we want to compute.
+        // Direction from the current vertex to the camera.
+        varying vec3 vViewDirection;
+
+
+        void main() {
+            // modelMatrix, projectionMatrix, cameraPosition and worldPosition provided by three.js
+            // Convert vertex position to world space
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+
+            // Compute view direction (from vertex to camera)
+            vViewDirection = cameraPosition - worldPosition.xyz;
+
+            // Transformed the vertex normal to the view space, and then normalized it.
+            vNormal = normalize(normalMatrix * normal);
+
+            // Computed the final position of the vertex in clip space
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+
+    </script>
+    <script type="x-shader/x-vertex" id="iridescent_fragmentShader">
+        // Declare uniform variables for color variation
+        uniform vec3 u_colorA;
+        uniform vec3 u_colorB;
+        uniform float u_time;
+
+        varying vec3 vNormal;
+        varying vec3 vViewDirection;
+
+        void main() {
+            // Normalize the view direction
+            vec3 viewDir = normalize(vViewDirection);
+
+            // Calculate the dot product between the normal and the view direction
+            float dotProduct = dot(normalize(vNormal), viewDir);
+
+            // Use mix() to interpolate between u_colorA and u_colorB based on the dot product
+            //vec3 iridescentColor = mix(u_colorA, u_colorB, dotProduct);
+            // Use sine function with time to create color variation
+            float timeFactor = sin(u_time); // Adjust the frequency and amplitude as needed
+            vec3 iridescentColor = mix(u_colorA, u_colorB, dotProduct) * (1.52 + timeFactor);
+
+            // Output the final color
+            gl_FragColor = vec4(iridescentColor, 1.0);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/dat.gui/build/dat.gui.min.js"></script>
+
+</head>
+<body>
+<button id="musicButton" class="button">BGM🎵🔊</button>
+
+<!-- Rest of your JavaScript code here -->
+<script src="./js/earth_final.js" type="module" defer></script>
+</body>
+</html>
